@@ -196,3 +196,206 @@ Este projeto nasceu da vontade de preservar o conteúdo de fóruns brasileiros d
 ## Licença
 
 MIT
+
+---
+
+---
+
+# 🏛️ Wayback Forum Archiver
+
+**A toolkit to extract, clean, and browse content from old forums archived by the Wayback Machine.**
+
+Transforms raw HTML pages from the [Wayback Machine](https://web.archive.org/) into structured, navigable data — preserving posts, users, metadata, and original content from forums that no longer exist.
+
+Originally developed to preserve the anime forum archives from [SobreSites](http://web.archive.org/web/*/www.sobresites.com/anime/forum/*) (~2001-2006), but the architecture is adaptable to other ASP and phpBB forums from the same era.
+
+---
+
+## The Problem
+
+The Wayback Machine saves web pages, but in a way that makes navigation difficult:
+
+- Filenames are URL-encoded (`viewtopic.php%3ft%3d1377%26amp%3bsid%3dabc123`)
+- Many pages are HTTP errors (429, 502) or empty forum pages ("User does not exist", login forms, etc.)
+- Content from different sources may share the same filename
+- Raw HTML files are not easily searchable
+- Pages are scattered across subfolders that mirror the original site's URL structure
+
+This toolkit solves each of these problems with a 5-step pipeline.
+
+## Pipeline
+
+```
+Wayback Machine HTMLs
+        │
+        ▼
+  ┌─────────────┐
+  │  renamer.py  │  Renames URL-encoded files to human-readable names
+  └──────┬──────┘  topic.asp%3fTOPIC_ID%3d79  →  asp_topic_79_p2.html
+         │
+         ▼
+  ┌──────────────┐
+  │ dedup_names  │  Resolves name collisions between different sources
+  └──────┬───────┘  phpbb_topic_100.html  →  phpbb_topic_100_combr.html
+         │
+         ▼
+  ┌─────────────┐
+  │ cleaner.py  │  Moves empty pages to _trash/
+  └──────┬──────┘  HTTP errors, "User does not exist", forms, etc.
+         │
+         ▼
+  ┌───────────────┐
+  │ extractor.py  │  Extracts structured data → split JSONs
+  └──────┬────────┘  Posts, users, forums, topics, metadata
+         │
+         ▼
+  ┌────────────────────────┐
+  │ indexer.py + server.py │  Web frontend with full-text search
+  └────────────────────────┘  Browse by forum / topic / author
+```
+
+## Features
+
+### renamer.py
+- Decodes URL-encoded filenames from the Wayback Machine
+- Generates descriptive names (`asp_topic_79_p2.html`, `phpbb_profile_42_viewprofile.html`)
+- Recursive subfolder search
+- Ignores files with real extensions (`.gif`, `.css`, `.js`, etc.)
+- Idempotent — re-running does not reprocess already-renamed files
+- Asks for confirmation before executing
+
+### dedup_names.py
+- Compares two folders from different sources
+- Adds a configurable suffix (`_combr`) to files with duplicate names
+- Recursive search
+- Does not modify the reference folder
+
+### cleaner.py
+- Detects pages without useful content by analyzing page content (not just filenames)
+- Identifies HTTP errors (429, 502, 503, 404), phpBB errors ("User does not exist", "Topic does not exist", etc.), and functional pages (login, registration, password recovery, "who is online")
+- Moves to a `_trash/` subfolder instead of deleting (safe for double-checking)
+- Ignores files with real extensions
+- Recursive search, ignores `_trash/` on subsequent runs
+
+### extractor.py
+- Two independent parsers: custom ASP forum and phpBB 2.x
+- Robust two-layer deduplication: primary key `(source, post_id)` + content hash fallback
+- Detects edited posts — keeps the version with more content
+- Extracts quoted content from Reply/ReplyQuote forms (may be the only surviving copy of a post)
+- Incremental writing in ~10MB chunks (handles large volumes without running out of memory)
+- Detects page type by filename, directory path, or HTML content
+- Incremental indexing
+- Extracts: post_id, topic_id, page, forum, author, date, text, signature, location, email, ICQ
+
+### web/ (indexer.py + server.py)
+- **indexer.py**: Creates a SQLite database with FTS5 (Full-Text Search) from the HTML files
+- **server.py**: Flask frontend with forum → topic → posts navigation, full-text search, original HTML viewer, author rankings
+- Incremental indexing — only processes new/modified files
+- Supports large volumes (tested with 3.5GB+ of HTML)
+
+## Supported Platforms
+
+- **Custom ASP forum** (e.g. Snitz Forums 2000) — `topic.asp`, `forum.asp`, `pop_profile.asp`, `members.asp`, `post.asp`
+- **phpBB 2.x** — `viewtopic.php`, `viewforum.php`, `profile.php`, `posting.php`, `groupcp.php`
+
+## Installation
+
+```bash
+git clone https://github.com/YOUR_USERNAME/wayback-forum-archiver.git
+cd wayback-forum-archiver
+
+# For the extractor (no external dependencies)
+python renamer.py
+
+# For the web frontend
+pip install flask
+python web/indexer.py
+python web/server.py
+```
+
+**Requirements**: Python 3.7+ — no external dependencies except Flask for the frontend.
+
+## Quick Start
+
+```bash
+# 1. Rename Wayback Machine files
+python renamer.py "/path/to/htmls"
+
+# 2. (Optional) Resolve duplicate names between sources
+python dedup_names.py "source_folder1" "source_folder2" "combr"
+
+# 3. Clean pages without content
+python cleaner.py "/path/to/htmls"
+
+# 4. Extract structured data
+python extractor.py "/path/to/htmls" "/output"
+
+# 5. Index and browse in the browser
+python web/indexer.py "/path/to/htmls" "archive.db"
+python web/server.py "/path/to/htmls" "archive.db"
+# Open http://localhost:5000
+```
+
+All scripts work interactively (prompting for paths) or via command-line arguments.
+
+## Project Structure
+
+```
+wayback-forum-archiver/
+├── README.md
+├── renamer.py          # Renames URL-encoded files → readable names
+├── dedup_names.py      # Resolves name collisions between sources
+├── cleaner.py          # Removes/moves pages without content
+├── extractor.py        # Extracts structured data → JSON
+└── web/
+    ├── indexer.py       # Indexes HTMLs → SQLite with FTS5
+    └── server.py        # Flask frontend for browsing and search
+```
+
+## Extracted Data
+
+### Per post
+| Field | Description |
+|-------|-------------|
+| `post_id` | Unique post ID on the platform |
+| `topic_id` | Topic ID |
+| `page` | Page number within the topic |
+| `author` | Author's username |
+| `date` | Date in ISO format |
+| `content_text` | Post text (cleaned) |
+| `content_html` | Original post HTML |
+| `forum_name` / `forum_id` | Source forum |
+| `source` | Source platform |
+| `signature` | Author's signature |
+
+### Per user
+| Field | Description |
+|-------|-------------|
+| `username` | Display name |
+| `email` | Email (CloudFlare-decoded when necessary) |
+| `location` | User-provided location |
+| `member_since` | Registration date |
+| `icq` / `homepage` | Period-era contact info |
+| `sources` | Which platforms the user appears on |
+
+## Adapting to Other Forums
+
+The code was written for SobreSites, but the structure is modular. To adapt to another forum:
+
+1. **renamer.py**: Add naming rules in `generate_clean_name()` for your forum's URL patterns
+2. **cleaner.py**: Add platform-specific error messages to `PHPBB_ERROR_MESSAGES` or create a new list
+3. **extractor.py**: Create a new parser class (following the `ASPForumParser` or `PhpBBParser` pattern) with regexes adapted to your forum's HTML structure
+4. **web/indexer.py**: Add the call to your new parser in `index_file()`
+
+Forums that should work with little or no adaptation:
+- phpBB 2.x and 3.x
+- Snitz Forums 2000 (ASP)
+- Other ASP forums with a similar structure
+
+## Background
+
+This project was born from the desire to preserve content from early 2000s Brazilian anime forums — an era of ICQ, MSN Messenger, anime quote signatures, and communities that existed before social media. The Wayback Machine saved the pages, but navigating them in their raw state is practically impossible. This toolkit makes that archive accessible again.
+
+## License
+
+MIT
