@@ -136,70 +136,46 @@ Arquivos principais:
 
 #### 1. Preparar o acervo bruto
 
-```powershell
-python .\prepare_archive.py \
-  --archive-root "C:\path\to\archive" \
-  --normalized-root "C:\path\to\archive\normalized" \
-  --work-root ".\work" \
-  --logs-root ".\logs" \
-  --progress-every 250
+```bash
+python prepare_archive.py --archive-root /path/to/archive --normalized-root /path/to/archive/normalized --work-root ./work --logs-root ./logs --progress-every 250
 ```
 
 #### 2. Smoke test do dataset
 
-```powershell
-python .\Build-ForumDataset.py \
-  --input-root "C:\path\to\archive\normalized" \
-  --output-root ".\out_test" \
-  --read-limit 200 \
-  --progress-every 50
+```bash
+python Build-ForumDataset.py --input-root /path/to/archive/normalized --output-root ./out_test --read-limit 200 --progress-every 50
 ```
 
 #### 3. Smoke test por tipo
 
 ASP `post/*`:
 
-```powershell
-python .\Build-ForumDataset.py \
-  --input-root "C:\path\to\archive\normalized" \
-  --output-root ".\out_post_debug" \
-  --read-limit 120 \
-  --kinds asp_post \
-  --progress-every 40
+```bash
+python Build-ForumDataset.py --input-root /path/to/archive/normalized --output-root ./out_post_debug --read-limit 120 --kinds asp_post --progress-every 40
 ```
 
 phpBB `viewtopic/*`:
 
-```powershell
-python .\Build-ForumDataset.py \
-  --input-root "C:\path\to\archive\normalized" \
-  --output-root ".\out_phpbb_debug" \
-  --read-limit 160 \
-  --kinds phpbb_viewtopic \
-  --progress-every 40
+```bash
+python Build-ForumDataset.py --input-root /path/to/archive/normalized --output-root ./out_phpbb_debug --read-limit 160 --kinds phpbb_viewtopic --progress-every 40
 ```
 
 #### 4. Run completa
 
-```powershell
-python .\Build-ForumDataset.py \
-  --input-root "C:\path\to\archive\normalized" \
-  --output-root ".\out" \
-  --progress-every 500
+```bash
+python Build-ForumDataset.py --input-root /path/to/archive/normalized --output-root ./out --progress-every 500
 ```
 
 #### 5. Refinar assinaturas ASP
 
-```powershell
-python .\Refine-ForumSignatures.py \
-  --run-root ".\out\run-YYYYMMDD-HHMMSS-XXX"
+```bash
+python Refine-ForumSignatures.py --run-root ./out/run-YYYYMMDD-HHMMSS-XXX
 ```
 
 #### 6. Enriquecer usuários com assinaturas
 
-```powershell
-python .\Enrich-ForumUserSignatures.py \
-  --run-root ".\out\run-YYYYMMDD-HHMMSS-XXX"
+```bash
+python Enrich-ForumUserSignatures.py --run-root ./out/run-YYYYMMDD-HHMMSS-XXX
 ```
 
 ### Uso recomendado para GPT
@@ -357,70 +333,46 @@ Main files:
 
 #### 1. Prepare the raw archive
 
-```powershell
-python .\prepare_archive.py \
-  --archive-root "C:\path\to\archive" \
-  --normalized-root "C:\path\to\archive\normalized" \
-  --work-root ".\work" \
-  --logs-root ".\logs" \
-  --progress-every 250
+```bash
+python prepare_archive.py --archive-root /path/to/archive --normalized-root /path/to/archive/normalized --work-root ./work --logs-root ./logs --progress-every 250
 ```
 
 #### 2. Dataset smoke test
 
-```powershell
-python .\Build-ForumDataset.py \
-  --input-root "C:\path\to\archive\normalized" \
-  --output-root ".\out_test" \
-  --read-limit 200 \
-  --progress-every 50
+```bash
+python Build-ForumDataset.py --input-root /path/to/archive/normalized --output-root ./out_test --read-limit 200 --progress-every 50
 ```
 
 #### 3. Kind-specific smoke tests
 
 ASP `post/*`:
 
-```powershell
-python .\Build-ForumDataset.py \
-  --input-root "C:\path\to\archive\normalized" \
-  --output-root ".\out_post_debug" \
-  --read-limit 120 \
-  --kinds asp_post \
-  --progress-every 40
+```bash
+python Build-ForumDataset.py --input-root /path/to/archive/normalized --output-root ./out_post_debug --read-limit 120 --kinds asp_post --progress-every 40
 ```
 
 phpBB `viewtopic/*`:
 
-```powershell
-python .\Build-ForumDataset.py \
-  --input-root "C:\path\to\archive\normalized" \
-  --output-root ".\out_phpbb_debug" \
-  --read-limit 160 \
-  --kinds phpbb_viewtopic \
-  --progress-every 40
+```bash
+python Build-ForumDataset.py --input-root /path/to/archive/normalized --output-root ./out_phpbb_debug --read-limit 160 --kinds phpbb_viewtopic --progress-every 40
 ```
 
 #### 4. Full run
 
-```powershell
-python .\Build-ForumDataset.py \
-  --input-root "C:\path\to\archive\normalized" \
-  --output-root ".\out" \
-  --progress-every 500
+```bash
+python Build-ForumDataset.py --input-root /path/to/archive/normalized --output-root ./out --progress-every 500
 ```
 
 #### 5. Refine ASP signatures
 
-```powershell
-python .\Refine-ForumSignatures.py \
-  --run-root ".\out\run-YYYYMMDD-HHMMSS-XXX"
+```bash
+python Refine-ForumSignatures.py --run-root ./out/run-YYYYMMDD-HHMMSS-XXX
 ```
 
 #### 6. Enrich users with observed signatures
 
-```powershell
-python .\Enrich-ForumUserSignatures.py \
-  --run-root ".\out\run-YYYYMMDD-HHMMSS-XXX"
+```bash
+python Enrich-ForumUserSignatures.py --run-root ./out/run-YYYYMMDD-HHMMSS-XXX
 ```
 
 ### Recommended GPT usage
