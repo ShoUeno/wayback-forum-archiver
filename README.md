@@ -1,4 +1,4 @@
-﻿# Wayback Forum Archiver
+# Wayback Forum Archiver
 
 Toolkit para transformar HTMLs antigos do Wayback Machine em um dataset auditável de fóruns históricos, com foco em preservação, busca e consumo por GPT.
 
@@ -138,8 +138,8 @@ Arquivos principais:
 
 ```powershell
 python .\prepare_archive.py \
-  --archive-root "D:\Projeto SS IA 2.0\archive" \
-  --normalized-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --archive-root "C:\path\to\archive" \
+  --normalized-root "C:\path\to\archive\normalized" \
   --work-root ".\work" \
   --logs-root ".\logs" \
   --progress-every 250
@@ -149,7 +149,7 @@ python .\prepare_archive.py \
 
 ```powershell
 python .\Build-ForumDataset.py \
-  --input-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --input-root "C:\path\to\archive\normalized" \
   --output-root ".\out_test" \
   --read-limit 200 \
   --progress-every 50
@@ -161,7 +161,7 @@ ASP `post/*`:
 
 ```powershell
 python .\Build-ForumDataset.py \
-  --input-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --input-root "C:\path\to\archive\normalized" \
   --output-root ".\out_post_debug" \
   --read-limit 120 \
   --kinds asp_post \
@@ -172,7 +172,7 @@ phpBB `viewtopic/*`:
 
 ```powershell
 python .\Build-ForumDataset.py \
-  --input-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --input-root "C:\path\to\archive\normalized" \
   --output-root ".\out_phpbb_debug" \
   --read-limit 160 \
   --kinds phpbb_viewtopic \
@@ -183,7 +183,7 @@ python .\Build-ForumDataset.py \
 
 ```powershell
 python .\Build-ForumDataset.py \
-  --input-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --input-root "C:\path\to\archive\normalized" \
   --output-root ".\out" \
   --progress-every 500
 ```
@@ -359,8 +359,8 @@ Main files:
 
 ```powershell
 python .\prepare_archive.py \
-  --archive-root "D:\Projeto SS IA 2.0\archive" \
-  --normalized-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --archive-root "C:\path\to\archive" \
+  --normalized-root "C:\path\to\archive\normalized" \
   --work-root ".\work" \
   --logs-root ".\logs" \
   --progress-every 250
@@ -370,7 +370,7 @@ python .\prepare_archive.py \
 
 ```powershell
 python .\Build-ForumDataset.py \
-  --input-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --input-root "C:\path\to\archive\normalized" \
   --output-root ".\out_test" \
   --read-limit 200 \
   --progress-every 50
@@ -382,7 +382,7 @@ ASP `post/*`:
 
 ```powershell
 python .\Build-ForumDataset.py \
-  --input-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --input-root "C:\path\to\archive\normalized" \
   --output-root ".\out_post_debug" \
   --read-limit 120 \
   --kinds asp_post \
@@ -393,7 +393,7 @@ phpBB `viewtopic/*`:
 
 ```powershell
 python .\Build-ForumDataset.py \
-  --input-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --input-root "C:\path\to\archive\normalized" \
   --output-root ".\out_phpbb_debug" \
   --read-limit 160 \
   --kinds phpbb_viewtopic \
@@ -404,7 +404,7 @@ python .\Build-ForumDataset.py \
 
 ```powershell
 python .\Build-ForumDataset.py \
-  --input-root "D:\Projeto SS IA 2.0\archive\normalized" \
+  --input-root "C:\path\to\archive\normalized" \
   --output-root ".\out" \
   --progress-every 500
 ```
