@@ -31,6 +31,10 @@ Pipeline principal:
 3. `Refine-ForumSignatures.py`
 4. `Enrich-ForumUserSignatures.py`
 
+Script auxiliar de reparo:
+
+- `Rebuild-KnowledgeLayer.py`
+
 Documentação complementar:
 
 - `ARCHITECTURE.md`
@@ -227,6 +231,10 @@ Main pipeline:
 2. `Build-ForumDataset.py`
 3. `Refine-ForumSignatures.py`
 4. `Enrich-ForumUserSignatures.py`
+
+Script auxiliar de reparo:
+
+- `Rebuild-KnowledgeLayer.py`
 
 Supporting documentation:
 

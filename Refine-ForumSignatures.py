@@ -119,9 +119,9 @@ def is_candidate_shape(candidate_text: str, full_text: str, max_signature_chars:
 def build_knowledge_text(payload: dict[str, Any]) -> str:
     lines: list[str] = []
     if payload.get('topic_title'):
-        lines.append(f"T?pico: {payload['topic_title']}")
+        lines.append(f"T\u00f3pico: {payload['topic_title']}")
     if payload.get('forum_title'):
-        lines.append(f"F?rum: {payload['forum_title']}")
+        lines.append(f"F\u00f3rum: {payload['forum_title']}")
     if payload.get('author_display'):
         lines.append(f"Autor: {payload['author_display']}")
     if payload.get('posted_at'):

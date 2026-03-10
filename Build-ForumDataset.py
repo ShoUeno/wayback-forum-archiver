@@ -18,7 +18,7 @@ from urllib.parse import unquote_to_bytes
 MONTHS = {
     'jan': 1, 'janeiro': 1,
     'fev': 2, 'fevereiro': 2,
-    'mar': 3, 'marco': 3, 'marÃƒÂ§o': 3,
+    'mar': 3, 'marco': 3, 'marÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§o': 3,
     'abr': 4, 'abril': 4,
     'mai': 5, 'maio': 5,
     'jun': 6, 'junho': 6,
@@ -36,9 +36,10 @@ HREF_RE = re.compile(r'(?is)<a\b[^>]*href\s*=\s*["\']?(?P<url>[^"\' >#]+)')
 IMG_RE = re.compile(r'(?is)<img\b[^>]*src\s*=\s*["\']?(?P<url>[^"\' >#]+)')
 CHARSET_RE = re.compile(r'(?is)charset\s*=\s*["\']?(?P<charset>[a-zA-Z0-9._-]+)')
 XML_ENCODING_RE = re.compile(r'(?is)<\?xml\b[^>]*encoding=["\'](?P<charset>[^"\']+)')
-MOJIBAKE_RE = re.compile(r'ÃƒÆ’.|Ãƒâ€š.|FÃƒÆ’|PÃƒÆ’|UsuÃƒÆ’|EndereÃƒÆ’|LocalizaÃƒÆ’|NÃƒÆ’Ã‚Âº')
+MOJIBAKE_RE = re.compile(r'ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢.|ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡.|FÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢|PÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢|UsuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢|EndereÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢|LocalizaÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢|NÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº')
 EMAIL_RE = re.compile(r'(?i)(?P<email>[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,})')
 PROFILE_CHROME_PREFIX_RE = re.compile(r'(?i)^\s*(?:exibir\s+perfil|view\s+profile)\s*::\s*')
+DISPLAY_NAME_NOISE_RE = re.compile(r'(?i)^(?:f[oÃ³]rum\s+de\s+)?anime\s*-\s*sobresites$')
 
 ASP_TOPIC_ROW_RE = re.compile(
     r'(?is)<tr>\s*<td\b[^>]*bgcolor="?(?:F8F8F8|white)"?[^>]*>(?P<author>.*?)</td>\s*<td\b[^>]*colspan="2"[^>]*>(?P<message>.*?)</td>\s*</tr>'
@@ -111,6 +112,8 @@ def sanitize_display_name(text: str | None) -> str:
         if cleaned == value:
             break
         value = cleaned
+    if DISPLAY_NAME_NOISE_RE.match(value):
+        return ''
     return value
 
 
@@ -201,7 +204,7 @@ def get_charset_hint(data: bytes) -> str:
 def looks_mojibake(text: str) -> bool:
     if not text:
         return False
-    if 'Ã¯Â¿Â½' in text:
+    if 'ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¿Ãƒâ€šÃ‚Â½' in text:
         return True
     strong_tokens = (
         'F?',
@@ -228,7 +231,7 @@ def text_score(text: str) -> int:
     if not text:
         return -999
     score = 0
-    for token in ('UsuÃƒÂ¡rio', 'UsuÃƒÂ¡rios', 'PÃƒÂ¡gina', 'FÃƒÂ³rum', 'SÃƒÂ£o', 'EndereÃƒÂ§o', 'LocalizaÃƒÂ§ÃƒÂ£o', 'Registrado', 'Mensagens'):
+    for token in ('UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rio', 'UsuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡rios', 'PÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡gina', 'FÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rum', 'SÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o', 'EndereÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§o', 'LocalizaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o', 'Registrado', 'Mensagens'):
         score += text.count(token) * 5
     score -= len(MOJIBAKE_RE.findall(text)) * 7
     score -= text.count('\ufffd') * 10
@@ -342,7 +345,7 @@ def parse_date(raw: str | None) -> dict[str, str | None]:
         result['iso_local'] = f'{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{minute:02d}:{second:02d}'
         return result
 
-    match = re.search(r'(?i)(?P<mon>jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-zÃƒÂ§]*\s+(?P<d>\d{1,2}),\s+(?P<y>\d{4})\s+(?P<h>\d{1,2}):(?P<n>\d{2})\s*(?P<ampm>am|pm)', clean)
+    match = re.search(r'(?i)(?P<mon>jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-zÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§]*\s+(?P<d>\d{1,2}),\s+(?P<y>\d{4})\s+(?P<h>\d{1,2}):(?P<n>\d{2})\s*(?P<ampm>am|pm)', clean)
     if match:
         month = MONTHS[match.group('mon').lower()]
         day = int(match.group('d'))
@@ -357,7 +360,7 @@ def parse_date(raw: str | None) -> dict[str, str | None]:
         result['iso_local'] = f'{year:04d}-{month:02d}-{day:02d}T{hour:02d}:{minute:02d}:00'
         return result
 
-    match = re.search(r'(?i)(?P<d>\d{1,2})\s+de\s+(?P<mon>[a-zÃƒÂ§]+)\s+de\s+(?P<y>\d{4})', clean)
+    match = re.search(r'(?i)(?P<d>\d{1,2})\s+de\s+(?P<mon>[a-zÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§]+)\s+de\s+(?P<y>\d{4})', clean)
     if match:
         month_name = match.group('mon').lower()
         if month_name in MONTHS:
@@ -376,9 +379,9 @@ def get_role_class(role_label: str | None) -> str:
         return 'administrator'
     if re.fullmatch(r'Moderador', role, flags=re.IGNORECASE):
         return 'moderator'
-    if re.fullmatch(r'Moderador\s+J[ÃƒÂºu]nior', role, flags=re.IGNORECASE):
+    if re.fullmatch(r'Moderador\s+J[ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºu]nior', role, flags=re.IGNORECASE):
         return 'decorative_rank'
-    if re.search(r'Estreante|J[ÃƒÂºu]nior|Membro|Veterano', role, flags=re.IGNORECASE):
+    if re.search(r'Estreante|J[ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºu]nior|Membro|Veterano', role, flags=re.IGNORECASE):
         return 'member_rank'
     return 'custom_rank'
 
@@ -643,9 +646,9 @@ class Context:
     def build_knowledge_text(self, payload: dict[str, Any]) -> str:
         lines = []
         if payload.get('topic_title'):
-            lines.append(f"TÃƒÂ³pico: {payload['topic_title']}")
+            lines.append(f"T\u00f3pico: {payload['topic_title']}")
         if payload.get('forum_title'):
-            lines.append(f"FÃƒÂ³rum: {payload['forum_title']}")
+            lines.append(f"F\u00f3rum: {payload['forum_title']}")
         if payload.get('author_display'):
             lines.append(f"Autor: {payload['author_display']}")
         if payload.get('posted_at'):
@@ -964,13 +967,15 @@ def parse_asp_profile(ctx: Context, relative: str, domain: str, source_html: str
         return
 
     user = ctx.ensure_user(f'asp:user:{user_id}', 'asp', user_id)
-    display_match = re.search(r'(?is)<title>[^<]*?(?:de|do)\s+(?P<name>[^<]+)</title>', source_html)
+    display_match = re.search(r'(?is)Usu[aÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡]rio:?\s*</font></b></td>\s*<td[^>]*><font[^>]*>(?P<name>.*?)</font>', source_html)
     if not display_match:
-        display_match = re.search(r'(?is)Usu[aÃƒÂ¡]rio:?\s*</font></b></td>\s*<td[^>]*><font[^>]*>(?P<name>.*?)</font>', source_html)
+        display_match = re.search(r'(?is)<td[^>]*valign=top[^>]*align=left[^>]*bgcolor="?618F9E"?[^>]*>\s*<font[^>]*><b>&nbsp;\s*(?P<name>.*?)\s*</b></font>\s*</td>', source_html)
+    if not display_match:
+        display_match = re.search(r'(?is)<title>[^<]*?(?:de|do)\s+(?P<name>[^<]+)</title>', source_html)
     display_name = sanitize_display_name(html_to_text(display_match.group('name')) if display_match else '')
     member_since_match = re.search(r'(?is)(?:Membro desde|Registrado em):&nbsp;</font></b></td>\s*<td[^>]*><font[^>]*>(?P<date>.*?)</font>', source_html)
     member_since = parse_date(member_since_match.group('date') if member_since_match else '')
-    location_match = re.search(r'(?is)(?:Localiza(?:ÃƒÂ§|&ccedil;)ÃƒÂ£o|Cidade):&nbsp;</font></b></td>\s*<td[^>]*><font[^>]*>(?P<value>.*?)</font>', source_html)
+    location_match = re.search(r'(?is)(?:Localiza(?:ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§|&ccedil;)ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o|Cidade):&nbsp;</font></b></td>\s*<td[^>]*><font[^>]*>(?P<value>.*?)</font>', source_html)
     location = html_to_text(location_match.group('value')) if location_match else ''
     homepage_match = re.search(r'(?is)Homepage:&nbsp;</font></b></td>\s*<td[^>]*><font[^>]*><a href="(?P<url>[^"]+)"', source_html)
     homepage = normalize_whitespace(homepage_match.group('url')) if homepage_match else ''
@@ -1002,13 +1007,13 @@ def parse_phpbb_profile(ctx: Context, relative: str, domain: str, source_html: s
     display_name = sanitize_display_name(html_to_text(display_match.group('name')) if display_match else '')
     registered_match = re.search(r'(?is)Registrado em:</td>\s*<td[^>]*>(?P<value>.*?)</td>', source_html)
     registered = parse_date(registered_match.group('value') if registered_match else '')
-    location_match = re.search(r'(?is)Localiza(?:ÃƒÂ§|&ccedil;)ÃƒÂ£o:</td>\s*<td[^>]*>(?P<value>.*?)</td>', source_html)
+    location_match = re.search(r'(?is)Localiza(?:ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§|&ccedil;)ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:</td>\s*<td[^>]*>(?P<value>.*?)</td>', source_html)
     location = html_to_text(location_match.group('value')) if location_match else ''
-    occupation_match = re.search(r'(?is)Ocupa(?:ÃƒÂ§|&ccedil;)ÃƒÂ£o:</td>\s*<td[^>]*>(?P<value>.*?)</td>', source_html)
+    occupation_match = re.search(r'(?is)Ocupa(?:ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§|&ccedil;)ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o:</td>\s*<td[^>]*>(?P<value>.*?)</td>', source_html)
     occupation = html_to_text(occupation_match.group('value')) if occupation_match else ''
     interest_match = re.search(r'(?is)Interesses:</td>\s*<td[^>]*>(?P<value>.*?)</td>', source_html)
     interests = html_to_text(interest_match.group('value')) if interest_match else ''
-    homepage_match = re.search(r'(?is)P[aÃƒÂ¡]gina/WWW:</td>\s*<td[^>]*>(?P<value>.*?)</td>', source_html)
+    homepage_match = re.search(r'(?is)P[aÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡]gina/WWW:</td>\s*<td[^>]*>(?P<value>.*?)</td>', source_html)
     homepage = html_to_text(homepage_match.group('value')) if homepage_match else ''
 
     ctx.update_user(
@@ -1230,9 +1235,9 @@ def finalize_outputs(ctx: Context) -> None:
         'read_limit': ctx.args.read_limit,
         'kind_filter': sorted(ctx.kind_filter),
         'notes': [
-            'sobresites_com e sobresites_com_br foram unificados como a mesma origem lÃƒÂ³gica',
+            'sobresites_com e sobresites_com_br foram unificados como a mesma origem lÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³gica',
             'post pages entram como trilha de salvage para lost media',
-            'users.jsonl preserva histÃƒÂ³rico observÃƒÂ¡vel de aliases, homepages, locations e emails',
+            'users.jsonl preserva histÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rico observÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡vel de aliases, homepages, locations e emails',
             'merged_identities.jsonl une automaticamente ASP e phpBB quando o apelido normalizado bate exatamente',
         ],
     }
@@ -1275,7 +1280,7 @@ def process_file(ctx: Context, path: Path) -> None:
     if read_result['repaired_from']:
         ctx.info(f'ENCODING | reparo aplicado {read_result["repaired_from"]} | {relative}')
     elif read_result['mojibake']:
-        ctx.warn(f'ENCODING | possÃƒÂ­vel mojibake; decoder={read_result["decoder"]}; charset_hint={read_result["charset_hint"] or "none"} | {relative}')
+        ctx.warn(f'ENCODING | possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­vel mojibake; decoder={read_result["decoder"]}; charset_hint={read_result["charset_hint"] or "none"} | {relative}')
 
     html_text = read_result['text']
     if page_kind == 'asp_topic':
@@ -1308,10 +1313,10 @@ def process_file(ctx: Context, path: Path) -> None:
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description='Extrai dataset auditÃƒÂ¡vel de arquivos HTML normalizados do fÃƒÂ³rum.')
+    parser = argparse.ArgumentParser(description='Extrai dataset auditÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡vel de arquivos HTML normalizados do fÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³rum.')
     parser.add_argument('--input-root', required=True, help='Raiz do acervo normalized')
-    parser.add_argument('--output-root', required=True, help='Pasta onde as runs serÃƒÂ£o criadas')
-    parser.add_argument('-r', '--read-limit', type=int, default=0, help='Limita quantos arquivos elegÃƒÂ­veis serÃƒÂ£o lidos')
+    parser.add_argument('--output-root', required=True, help='Pasta onde as runs serÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o criadas')
+    parser.add_argument('-r', '--read-limit', type=int, default=0, help='Limita quantos arquivos elegÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­veis serÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o lidos')
     parser.add_argument('--kinds', nargs='*', default=[], help='Filtra tipos, ex.: asp_topic asp_post phpbb_viewtopic')
     parser.add_argument('--progress-every', type=int, default=200, help='Intervalo de log de progresso')
     return parser
@@ -1332,7 +1337,7 @@ def main() -> int:
     ensure_dir(run_root / 'logs')
 
     ctx = Context(input_root, run_root, args)
-    ctx.info(f'BOOT | Iniciando extraÃƒÂ§ÃƒÂ£o. input={input_root} output={run_root}')
+    ctx.info(f'BOOT | Iniciando extraÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£o. input={input_root} output={run_root}')
     try:
         for path in iter_html_files(input_root):
             try:
@@ -1344,7 +1349,7 @@ def main() -> int:
                 ctx.error(f'PARSE | {exc} | {relative}')
         finalize_outputs(ctx)
         ctx.info(
-            'DONE | ConcluÃƒÂ­do. posts=%s salvage=%s topicos=%s usuarios=%s merges=%s'
+            'DONE | ConcluÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­do. posts=%s salvage=%s topicos=%s usuarios=%s merges=%s'
             % (
                 ctx.summary['posts_emitted'],
                 ctx.summary['salvage_records'],
