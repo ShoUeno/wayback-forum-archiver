@@ -674,12 +674,24 @@ def parse_asp_topic(ctx: Context, relative: str, domain: str, source_html: str) 
         source_html,
         flags=re.IGNORECASE,
     )
+    breadcrumb = re.search(
+        r'(?is)<a[^>]+class="linkstopo"[^>]+href="FORUM\.asp\?FORUM_ID=(?P<forum>\d+)"[^>]*>(?P<forumTitle>.*?)</a>\s*&nbsp;>\s*&nbsp;(?P<topicTitle>.*?)(?:<!--|</font>)',
+        source_html,
+        flags=re.IGNORECASE,
+    )
     forum_title = url_decode(meta.group('forumTitle')) if meta else ''
     topic_title = url_decode(meta.group('topicTitle')) if meta else ''
     if not topic_id and meta:
         topic_id = meta.group('topic')
     if not forum_id and meta:
         forum_id = meta.group('forum')
+    if breadcrumb:
+        if not forum_id:
+            forum_id = breadcrumb.group('forum')
+        if not forum_title:
+            forum_title = normalize_whitespace(html_to_text(breadcrumb.group('forumTitle')))
+        if not topic_title:
+            topic_title = normalize_whitespace(html_to_text(breadcrumb.group('topicTitle')))
     if not topic_id:
         ctx.warn(f'PARSE | ASP topic sem TOPIC_ID | {relative}')
         return
